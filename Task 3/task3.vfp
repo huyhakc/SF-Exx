@@ -1,0 +1,41 @@
+<apex:page Controller="SearchInVFController">
+    <script type = "text/javascript">
+        function increaseCounter(oid, otype) {
+            Visualforce.remoting.Manager.invokeAction(
+                '{!$RemoteAction.SearchInVFController.updateCounter}',
+                oid,
+                otype,
+                function(result, event){
+                    if (event.status) {
+                        document.getElementById(oid).innerHTML = result;
+                    } else {
+                        alert('Error!!!');
+                    }
+                },
+                {escape: true}
+            );
+        }
+    </script>
+    <apex:form >
+        <center>
+        <apex:pageBlock >
+            <apex:inputText value="{!searchKey}" label="Input"/>
+            <apex:commandButton value="Search records" action="{!search}"/>
+            <apex:commandButton value="Clear records" action="{!clear}"/>
+        </apex:pageBlock>
+        </center>   
+        <br />
+        <apex:pageBlock title="Search Account and Contact">
+            <apex:pageBlockTable value="{!my_list}" var="sobj">
+                <apex:column headerValue="Record Name" value="{!sobj.oname}"/>
+                <apex:column headerValue="Record Type" id="otype" value="{!sobj.otype}"/>
+                <apex:column headerValue="Counter">
+                    <span id="{!sobj.oid}">{!sobj.ocounter}</span>
+                </apex:column>/>
+                <apex:column headerValue="Click to update the counter">
+                    <apex:commandLink value="Increment Counter" onclick="increaseCounter('{!sobj.oid}', '{!sobj.otype}');return false;" />
+                </apex:column>/>
+            </apex:pageBlockTable>
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

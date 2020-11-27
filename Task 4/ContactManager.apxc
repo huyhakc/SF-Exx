@@ -1,0 +1,38 @@
+@RestResource(urlMapping='/Contact/*')
+global with sharing class ContactManager {
+    	@HttpPut
+	global static void upsertContact() {
+		RestRequest request = RestContext.request;
+        String payload = request.requestbody.tostring();
+        try {
+        	Map<String, Object> deserialized = (Map<String, Object>)JSON.deserializeUntyped(payload);
+            for (Object instance : (List<Object>)deserialized.get('data')) {
+                Map<String, Object> params = (Map<String, Object>)instance;
+                Contact con = new Contact();
+                for(String fieldName : params.keySet()) {
+                    if (fieldName == 'Birthdate') {                        
+                        con.put(fieldName, Date.valueOf((String)params.get(fieldName)));
+                    }
+                    else {
+                        con.put(fieldName, params.get(fieldName));
+                    }              	
+                }
+                try {
+                    update con;
+                } catch(DmlException e) {
+                    // id does not exist, ...
+                    respCode(500, e.getMessage());
+                } 
+            }            
+        } catch(Exception e) {
+            // json format, ...
+            respCode(500, e.getMessage());
+        }
+    }
+    public static void respCode(Integer stsCode, String msg) {
+        RestContext.response.statusCode = stsCode;
+        String jsonResponse = '{"response": {"success": "false", "message": "' + msg + '"}}';
+        RestContext.response.responseBody = blob.valueOf(jsonResponse);
+        //System.debug('The following exception has occurred: ' + msg);
+    }
+}

@@ -1,0 +1,23 @@
+<apex:page Controller="SearchInVFController">
+    <apex:form >
+        <center>
+        <apex:pageBlock >
+            <apex:inputText value="{!searchKey}" label="Input"/>
+            <apex:commandButton value="Search records" action="{!search}"/>
+            <apex:commandButton value="Clear records" action="{!clear}"/>
+        </apex:pageBlock>
+        </center>   
+        <br />
+        <apex:pageBlock title="Search Account and Contact">
+            <apex:pageBlockTable value="{!my_list}" var="sobj">
+                <apex:column headerValue="Record Name" value="{!sobj.oname}"/>
+                <apex:column headerValue="Record Type" value="{!sobj.otype}"/>
+                <apex:column headerValue="Click to open">
+                    <apex:outputLink value="{!URLFOR($Action[sobj.otype].View, sobj.oid)}" target="_blank">
+                        View
+                    </apex:outputLink>
+                </apex:column>/>
+            </apex:pageBlockTable>
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

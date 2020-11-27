@@ -1,0 +1,41 @@
+
+public class ProcessApproval {
+    /**
+    * This method will submit the Contact for approval
+    **/
+    public static void submitForApproval(Contact con){        
+        // Create an approval request for Contact        
+        Approval.ProcessSubmitRequest req = new Approval.ProcessSubmitRequest();          
+        req.setComments('Submitting approval request using Trigger');        
+        req.setObjectId(con.id);
+        // Submit the approval request for the Contact        
+        Approval.ProcessResult result = Approval.process(req);        
+    }
+    /**
+    *Get ProcessInstanceWorkItemId using SOQL
+    **/
+    public static Id getWorkItemId(Id targetObjectId){
+        Id workItemId = null;
+        for(ProcessInstanceWorkitem workItem  : [Select p.Id from ProcessInstanceWorkitem p where p.ProcessInstance.TargetObjectId =: targetObjectId]){
+            workItemId  =  workItem.Id;
+        }
+        return workItemId;
+    }
+    /**
+    * This method will Approve the Contact
+    **/
+    public static void approveRecord(Contact con){
+        Approval.ProcessWorkitemRequest req = new Approval.ProcessWorkitemRequest();
+        req.setComments('Approving request using Trigger');
+        req.setAction('Approve');        
+        Id workItemId = getWorkItemId(con.id); 
+        if(workItemId == null){
+            con.addError('Error Occured in Trigger');
+        }
+        else{
+            req.setWorkitemId(workItemId);
+            // Submit the request for approval
+            Approval.ProcessResult result =  Approval.process(req);
+        }
+    }
+}

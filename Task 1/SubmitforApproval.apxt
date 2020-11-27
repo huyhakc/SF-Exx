@@ -1,0 +1,37 @@
+trigger SubmitforApproval on Contact (after insert, after update) {
+    try{
+        if(trigger.isInsert){
+            Set<Id> accountIds = new Set<Id>();
+            for(Contact con:trigger.new){
+                ProcessApproval.submitForApproval(con);
+                ProcessApproval.approveRecord(con);
+                accountIds.add(con.AccountId);
+            }
+            List<Contact> cons = [Select Active__c from Contact where id in :trigger.new];
+            for(Contact c: cons){
+                c.Active__c = true;
+            }
+            update cons;
+            List<Account> lstAcc = [Select TotalContacts__c FROM Account where Id in :accountIds];
+            for(Account acc:lstAcc){
+                acc.TotalContacts__c = acc.TotalContacts__c + 1;
+            }
+            update lstAcc;
+        } else if (trigger.isUpdate){
+            Set<Id> accountIds = new Set<Id>();
+            for(Contact con:trigger.new){
+                Contact conOld=Trigger.OldMap.get(con.Id);
+                if (con.Active__c == false && conOld.Active__c == true){
+                	accountIds.add(con.AccountId);
+                }
+            }
+            List<Account> lstAcc = [Select TotalContacts__c FROM Account where Id in :accountIds];
+            for(Account acc:lstAcc){
+                acc.TotalContacts__c = acc.TotalContacts__c - 1;
+            }
+            update lstAcc;
+        }
+    } catch (Exception e) {
+        System.debug(e.getMessage());
+    }
+}

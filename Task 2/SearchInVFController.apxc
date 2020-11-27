@@ -1,0 +1,51 @@
+global with sharing class SearchInVFController {
+    public list <Account> acclst     {get;set;}
+    public list <Contact> conlst     {get;set;}
+    public String searchKey          {get;set;}
+    public list <ResultList> my_list {get;set;}
+    
+    public SearchInVFController( ) {
+    }
+    public void search(){
+        string searchquery='select Name, id, Counter__c from Account where name like \''+searchKey+'%\' ';
+        acclst= Database.query(searchquery);
+        my_list = new list <ResultList>();
+        for (Account acc:acclst) {
+            ResultList tmp = new ResultList();
+            tmp.oname = acc.Name;
+            tmp.otype = 'Account';
+            tmp.oid = acc.id;
+            tmp.ocounter = String.valueOf(acc.Counter__c);  
+            my_list.add(tmp);
+        }
+        searchquery='select Name, id, Counter__c from Contact where name like \''+searchKey+'%\' ';
+        conlst= Database.query(searchquery);
+        for (Contact con:conlst) {
+            ResultList tmp = new ResultList();
+            tmp.oname = con.Name;
+            tmp.oid = con.id;
+            tmp.otype = 'Contact';
+            tmp.ocounter = String.valueOf(con.Counter__c);
+            my_list.add(tmp);
+        }
+    }
+    public void clear(){
+        if (!my_list.isEmpty() && my_list != null) {
+        	my_list.clear();
+        }
+    }
+    @RemoteAction
+    global static Integer updateCounter(String oid, String otype) {
+        if (otype == 'Account') {
+            Account updateAccount = [Select Counter__c from Account where id =: oid];
+            updateAccount.Counter__c = updateAccount.Counter__c + 1;
+            update updateAccount;
+            return updateAccount.Counter__c.intValue();
+        } else {
+            Contact updateContact = [Select Counter__c from Contact where id =: oid];
+            updateContact.Counter__c = updateContact.Counter__c + 1;
+            update updateContact;
+            return updateContact.Counter__c.intValue();            
+        }
+    }
+}

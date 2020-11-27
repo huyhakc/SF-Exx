@@ -1,0 +1,9 @@
+public class ResultList {
+    public String oname      {get; set;}
+    public String otype      {get; set;}
+    public String oid        {get; set;}
+    public String ocounter   {get; set;}
+    
+    public ResultList () {
+    }
+}
